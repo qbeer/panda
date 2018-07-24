@@ -4,16 +4,21 @@ class PndAnaPidSelector;
 class PndAnaPidCombiner;
 class PndAnalysis;
 
+const int JPSI = 443;
+const int PSI2S = 88888;
+// *** the lorentz vector of the initial psi(2S)
+const TLorentzVector ini(0, 0, 6.231552, 7.240065);
+
 // *** routine to only keep PID matched candidates in list
-int SelectTruePid(PndAnalysis *ana, RhoCandList &l)
+int SelectTruePid(PndAnalysis *ana, RhoCandList &list)
 {
 	int removed = 0;
 	
-	for (int ii=l.GetLength()-1;ii>=0;--ii)
+	for (int i=list.GetLength()-1;i>=0;--i)
 	{
-		if ( !(ana->McTruthMatch(l[ii])) )
+		if ( !(ana->McTruthMatch(list[i])) )
 		{
-			l.Remove(l[ii]);
+			list.Remove(list[i]);
 			removed++;
 		}
 	}
@@ -24,8 +29,7 @@ int SelectTruePid(PndAnalysis *ana, RhoCandList &l)
 
 void tut_ana(int nevts = 0, TString prefix = "signal")
 {
- 	// *** some variables
-	int i=0,j=0, k=0, l=0;
+
 	gStyle->SetOptFit(1011);
 	
 	// *** the output file for FairRunAna
@@ -114,12 +118,11 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 	double m0_jpsi = TDatabasePDG::Instance()->GetParticle("J/psi")->Mass();   // Get nominal PDG mass of the J/psi
 	RhoMassParticleSelector *jpsiMassSel=new RhoMassParticleSelector("jpsi",m0_jpsi,1.0);
 	
-	// *** the lorentz vector of the initial psi(2S)
-	TLorentzVector ini(0, 0, 6.231552, 7.240065);
-	
 	// ***
 	// the event loop
 	// ***
+	int i = 0;
+
 	while (theAnalysis->GetEvent() && i++<nevts)
 	{
 		if ((i%100)==0) cout<<"evt " << i << endl;
@@ -137,9 +140,9 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 		// ***
 		// *** do the TRUTH MATCH for jpsi
 		// ***
-		jpsi.SetType(443);
+		jpsi.SetType(JPSI);
 				
-		for (j=0;j<jpsi.GetLength();++j) 
+		for (int j=0;j<jpsi.GetLength();++j) 
 		{
 			hjpsim_all->Fill( jpsi[j]->M() );
 			
@@ -155,7 +158,7 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 		// ***
 		// *** do VERTEX FIT (J/psi)
 		// ***
-		for (j=0;j<jpsi.GetLength();++j) 
+		for (int j=0;j<jpsi.GetLength();++j) 
 		{
 			PndKinVtxFitter vtxfitter(jpsi[j]);	// instantiate a vertex fitter
 			vtxfitter.Fit();
@@ -185,9 +188,9 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 		// ***
 		// *** do the TRUTH MATCH for psi(2S)
 		// ***
-		psi2s.SetType(88888);
+		psi2s.SetType(PSI2S);
 
-		for (j=0;j<psi2s.GetLength();++j) 
+		for (int j=0;j<psi2s.GetLength();++j) 
 		{
 			hpsim_all->Fill( psi2s[j]->M() );
 			
@@ -204,7 +207,7 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 		// ***
 		// *** do 4C FIT (initial psi(2S) system)
 		// ***
-		for (j=0;j<psi2s.GetLength();++j) 
+		for (int j=0;j<psi2s.GetLength();++j) 
 		{
 			PndKinFitter fitter(psi2s[j]);	// instantiate the kin fitter in psi(2S)
 			fitter.Add4MomConstraint(ini);	// set 4 constraint
@@ -227,7 +230,7 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 		// ***
 		// *** do MASS CONSTRAINT FIT (J/psi)
 		// ***
-		for (j=0;j<jpsi.GetLength();++j) 
+		for (int j=0;j<jpsi.GetLength();++j) 
 		{
 			PndKinFitter mfitter(jpsi[j]);		// instantiate the PndKinFitter in psi(2S)
 			mfitter.AddMassConstraint(m0_jpsi);	// add the mass constraint
@@ -258,11 +261,11 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 				
 		// *** all combinatorics again with true PID
 		jpsi.Combine(muplus, muminus);
-		for (j=0;j<jpsi.GetLength();++j) hjpsim_trpid->Fill( jpsi[j]->M() );
+		for (int j=0;j<jpsi.GetLength();++j) hjpsim_trpid->Fill( jpsi[j]->M() );
 		jpsi.Select(jpsiMassSel);
 		
 		psi2s.Combine(jpsi, piplus, piminus);
-		for (j=0;j<psi2s.GetLength();++j) hpsim_trpid->Fill( psi2s[j]->M() );
+		for (int j=0;j<psi2s.GetLength();++j) hpsim_trpid->Fill( psi2s[j]->M() );
 		
 		
 		// ***
@@ -276,11 +279,11 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 		theAnalysis->FillList(piminus, "PionLooseMinus", "PidAlgoMvd;PidAlgoStt;PidAlgoDrc");
 		
 		jpsi.Combine(muplus, muminus);
-		for (j=0;j<jpsi.GetLength();++j) hjpsim_lpid->Fill( jpsi[j]->M() );
+		for (int j=0;j<jpsi.GetLength();++j) hjpsim_lpid->Fill( jpsi[j]->M() );
 		jpsi.Select(jpsiMassSel);
 		
 		psi2s.Combine(jpsi, piplus, piminus);
-		for (j=0;j<psi2s.GetLength();++j) hpsim_lpid->Fill( psi2s[j]->M() );
+		for (int j=0;j<psi2s.GetLength();++j) hpsim_lpid->Fill( psi2s[j]->M() );
 		
 		
 		// ***
@@ -294,11 +297,11 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 		theAnalysis->FillList(piminus, "PionLooseMinus", "PidAlgoMvd;PidAlgoStt;PidAlgoDrc");
 		
 		jpsi.Combine(muplus, muminus);
-		for (j=0;j<jpsi.GetLength();++j) hjpsim_tpid->Fill( jpsi[j]->M() );
+		for (int j=0;j<jpsi.GetLength();++j) hjpsim_tpid->Fill( jpsi[j]->M() );
 		jpsi.Select(jpsiMassSel);
 		
 		psi2s.Combine(jpsi, piplus, piminus);
-		for (j=0;j<psi2s.GetLength();++j) hpsim_tpid->Fill( psi2s[j]->M() );
+		for (int j=0;j<psi2s.GetLength();++j) hpsim_tpid->Fill( psi2s[j]->M() );
 		
 	}
 	
