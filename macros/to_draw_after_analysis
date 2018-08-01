@@ -1,0 +1,4 @@
+npbarp->Draw("pbarpfit_d0d0m", "fitflag == 1 && fitchiq < 20", "") // jpsi mass spectra
+npbarp->Draw("pbarpfit_d0m", "fitflag == 1 && fitchiq < 20", "") // psi(2s) mass spectra, much worse
+npbarp->Draw("fitchiq", "fitflag == 1", ""); // MUCH BETTER!!!!
+
