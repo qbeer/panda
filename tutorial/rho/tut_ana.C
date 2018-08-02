@@ -62,7 +62,7 @@ void tut_ana(int nevts = 0, TString prefix = "signal")
 	fRun->Init(); 
 	
 	// *** create an output file for all histograms
-	TFile *out = TFile::Open(prefix+"_ana.root","RECREATE");
+		
 	
 	// *** create some histograms
 	TH1F *hjpsim_all = new TH1F("hjpsim_all","J/#psi mass (all)",200,0,4.5);
